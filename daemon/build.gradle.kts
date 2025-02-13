@@ -75,7 +75,7 @@ android {
     }
 
     namespace = "org.lsposed.daemon"
-    ndkVersion = "28.0.12433566"
+    ndkVersion = "28.0.13004108"
 }
 
 android.applicationVariants.all {
