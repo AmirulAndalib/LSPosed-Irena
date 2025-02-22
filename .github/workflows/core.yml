@@ -1,6 +1,12 @@
 name: Core
 
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+  push:
+    branches: [ dev ]
+    tags: [ v* ]
+  pull_request:
+  merge_group:
 
 jobs:
   build:
