@@ -60,7 +60,7 @@ dependencies {
     implementation(libs.commons.lang3)
     implementation(libs.axml)
     implementation(projects.hiddenapi.bridge)
-    implementation(projects.libxposedCompat)
+    implementation(projects.libxposed.compat)
     implementation(projects.services.daemonService)
     implementation(projects.services.managerService)
     compileOnly(libs.androidx.annotation)
