@@ -264,7 +264,7 @@ public class LSPManagerService extends ILSPManagerService.Stub {
 
     @Override
     public IBinder asBinder() {
-        return this;
+        return super.asBinder();
     }
 
     @Override
