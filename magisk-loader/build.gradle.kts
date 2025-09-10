@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Hex
 import org.apache.tools.ant.filters.FixCrLfFilter
 import org.apache.tools.ant.filters.ReplaceTokens
 import org.gradle.kotlin.dsl.register
+import org.gradle.kotlin.dsl.support.serviceOf
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 
@@ -225,26 +226,26 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
         dependsOn(pushTask)
         commandLine(
             adb, "shell", "su", "-c",
-            "magisk --install-module /data/local/tmp/${zipFileName}"
+            "'magisk --install-module /data/local/tmp/${zipFileName}'"
         )
     })
     tasks.register<Exec>("flashMagiskAndReboot${variantCapped}", fun Exec.() {
         group = "LSPosed"
         dependsOn(flashMagiskTask)
-        commandLine(adb,"reboot")
+        commandLine(adb, "reboot")
     })
     val flashKsuTask = tasks.register<Exec>("flashKsu${variantCapped}", fun Exec.() {
         group = "LSPosed"
         dependsOn(pushTask)
         commandLine(
             adb, "shell", "su", "-c",
-            "ksud module install /data/local/tmp/${zipFileName}"
+            "'ksud module install /data/local/tmp/${zipFileName}'"
         )
     })
     tasks.register<Exec>("flashKsuAndReboot${variantCapped}", fun Exec.() {
         group = "LSPosed"
         dependsOn(flashKsuTask)
-        commandLine(adb, "shell", "su", "-c", "/system/bin/svc", "power", "reboot")
+        commandLine(adb, "reboot")
     })
 }
 
@@ -301,12 +302,26 @@ val pushApk = tasks.register<Exec>("pushApk") {
     workingDir(project(":app").layout.buildDirectory.dir("outputs/apk/debug"))
     commandLine(adb, "push", "app-debug.apk", tmpApk)
 }
-val openApp = tasks.register<Exec>("openApp") {
+tasks.register<Exec>("openApp") {
     group = "LSPosed"
+    val apiLevelOutput = ByteArrayOutputStream()
+    serviceOf<ExecOperations>().exec {
+        commandLine("adb", "shell", "getprop", "ro.build.version.sdk")
+        standardOutput = apiLevelOutput
+    }
+    val apiLevel = apiLevelOutput.toString().trim().toInt()
+    val secretCodeAction = if (apiLevel >= 29) {
+        "android.telephony.action.SECRET_CODE"
+    } else {
+        "android.provider.Telephony.SECRET_CODE"
+    }
     commandLine(
         adb, "shell",
-        "am", "start", "-c", "org.lsposed.manager.LAUNCH_MANAGER",
-        "com.android.shell/.BugreportWarningActivity"
+        "su", "-c",
+        "am", "broadcast",
+        "-a", secretCodeAction,
+        "-d", "android_secret_code://5776733",
+        "android"
     )
 }
 tasks.register("reRunApp", fun Task.() {
