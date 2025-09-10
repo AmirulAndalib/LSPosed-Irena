@@ -175,6 +175,9 @@ fun afterEval() = android.applicationVariants.forEach { variant ->
             from(layout.buildDirectory.dir("intermediates/stripped_native_libs/$variantCapped/strip${variantCapped}DebugSymbols/out/lib")) {
                 include("**/liblspd.so")
             }
+            from(project(":dex2oat").layout.buildDirectory.dir("intermediates/cmake/$buildTypeLowered/obj")) {
+                include("**/libpreload.so")
+            }
         }
         into("bin") {
             from(project(":dex2oat").layout.buildDirectory.dir("intermediates/cmake/$buildTypeLowered/obj")) {
